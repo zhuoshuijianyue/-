@@ -17,13 +17,15 @@
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
 #include <locale.h>
-
+#include "/home/gwc/ysyx-workbench/nemu/src/monitor/sdb/watchpoint.h"
+#include "/home/gwc/ysyx-workbench/nemu/src/monitor/sdb/sdb.h"
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
  * This is useful when you use the `si' command.
  * You can modify this value as you want.
  */
 #define MAX_INST_TO_PRINT 10
+
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
@@ -38,6 +40,27 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+#ifdef CONFIG_SDBWATCHPOINT
+//WP *headtemp=NULL;
+bool booltemp;
+word_t numtemp;
+    for(WP *headtemp=head;headtemp!=NULL;headtemp=headtemp->next)
+    {
+      numtemp=expr(headtemp->regname,&booltemp);
+      if(headtemp->regnum!=numtemp)
+      {
+        nemu_state.state=NEMU_STOP;
+    printf("watch point %d : %s\n",headtemp->NO,headtemp->regname);
+    printf("old value :\n 0x%08x \n",headtemp->regnum);
+    printf("new value :\n 0x%08x \n",numtemp);
+    printf("value change at pc : 0x%08x\n",cpu.pc);
+
+    headtemp->regnum=numtemp;
+    }
+    }
+
+  
+#endif
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {

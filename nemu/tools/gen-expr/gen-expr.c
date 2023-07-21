@@ -31,10 +31,48 @@ static char *code_format =
 "  return 0; "
 "}";
 
-static void gen_rand_expr() {
-  buf[0] = '\0';
+const char *zero_str="\0";
+const char *expr_str[]= {"(",")","+","-","*","/"};
+const char *expr_sub="-";
+const char *expr_mul="*";
+static int str_num;
+
+uint32_t choose(const uint32_t n){
+ return rand()%n;
 }
 
+static void gen_rand_expr() {
+switch(choose(3)){
+  case 0:{
+    str_num+=sprintf(buf+str_num,"%u",choose(10));break;
+  }
+  case 1:{
+    str_num+=sprintf(buf+str_num,"%s",expr_str[0]);
+    gen_rand_expr();
+    str_num+=sprintf(buf+str_num,"%s",expr_str[1]);
+    break;
+  }
+  case 2:{
+    gen_rand_expr();
+   str_num+=sprintf(buf+str_num,"%s",expr_str[2]);
+    gen_rand_expr();
+    break;
+  }
+  case 3:{
+    gen_rand_expr();
+    str_num+=sprintf(buf+str_num,"%s",expr_mul);
+    gen_rand_expr();
+    break;
+  }
+  case 4:{
+    gen_rand_expr();
+    str_num+=sprintf(buf+str_num,"%s",expr_mul);
+    gen_rand_expr();
+    break;
+  }
+  default:buf[0]='2';break;
+}
+}
 int main(int argc, char *argv[]) {
   int seed = time(0);
   srand(seed);

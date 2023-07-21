@@ -14,19 +14,14 @@
 ***************************************************************************************/
 
 #include "sdb.h"
-
+#include "watchpoint.h"
+//#include<assert.h>
 #define NR_WP 32
 
-typedef struct watchpoint {
-  int NO;
-  struct watchpoint *next;
 
-  /* TODO: Add more members if necessary */
-
-} WP;
-
-static WP wp_pool[NR_WP] = {};
-static WP *head = NULL, *free_ = NULL;
+WP *head;
+WP *free_;
+WP wp_pool[NR_WP] = {};
 
 void init_wp_pool() {
   int i;
@@ -39,5 +34,98 @@ void init_wp_pool() {
   free_ = wp_pool;
 }
 
-/* TODO: Implement the functionality of watchpoint */
 
+WP* new_wp()
+{
+    //WP *temp;
+    WP *freetemp=free_;
+    int freenum=free_->NO;
+    WP *result=free_;
+  if(free_==NULL) assert(0);
+  if(head==NULL) {
+    head=free_;
+    free_=free_->next;
+    head->next=NULL;
+    return head;
+  }
+  else {
+    for(WP *headtemp=head;headtemp!=NULL;headtemp=headtemp->next)
+    {
+        if((headtemp==head)&&(head->NO>freenum))
+        {
+            freetemp=free_;
+            free_=free_->next;
+            freetemp->next=head;
+            head=freetemp;
+            return result;
+        }
+        else if(headtemp->next!=NULL){
+        if(headtemp->next->NO>freenum)
+        {
+            freetemp=free_;
+            free_=free_->next;
+            freetemp->next=headtemp->next;
+            headtemp->next=freetemp;
+            return result;
+        }
+        }
+        else if((headtemp->next==NULL)&&(headtemp->NO<freenum))
+        {
+            headtemp->next=free_;
+            free_=free_->next;
+            headtemp->next->next=NULL;
+            return result;
+        }
+    }
+
+  }
+  return NULL;
+}
+
+/*word_t numtest()
+{
+  return gpr(1);
+}*/
+
+void free_wp(WP *wp){
+  return ;
+}
+
+void deletewp(int num)
+{
+    WP *temp=NULL;
+   for(WP *headtemp=head;headtemp!=NULL;headtemp=headtemp->next)
+   {
+    if(head==headtemp&&headtemp->NO==num){
+        head=head->next;
+        headtemp->next=free_;
+        free_=headtemp;
+        return ;
+    }
+    if(headtemp->next!=0)
+    {
+        if(headtemp->next->NO==num)
+        {
+            temp=headtemp->next;
+            headtemp->next=headtemp->next->next;
+            temp->next=free_;
+            free_=temp;
+            return ;
+        }
+    }
+    
+   }
+   return ;
+}
+/*word_t headnumprint(WP *temp){
+
+  return temp->num
+}*/
+
+void wpprint()
+{
+  for(WP *headtemp=head;headtemp!=NULL;headtemp=headtemp->next)
+  {
+    printf("watchpoint NO %d : %s\n",headtemp->NO,headtemp->regname);
+  }
+}
