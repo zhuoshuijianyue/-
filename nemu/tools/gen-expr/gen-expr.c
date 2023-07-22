@@ -31,48 +31,43 @@ static char *code_format =
 "  return 0; "
 "}";
 
-const char *zero_str="\0";
-const char *expr_str[]= {"(",")","+","-","*","/"};
-const char *expr_sub="-";
-const char *expr_mul="*";
-static int str_num;
 
-uint32_t choose(const uint32_t n){
- return rand()%n;
+const char *expr_str[]= {"+","-","*","/","(",")"};
+
+static unsigned int str_num=0;
+static void gen_rand_expr();
+void bufferoverflow(unsigned int a)
+{
+  if(a>=60000) {
+    a=0;
+    strcpy(buf,"\0");
+    gen_rand_expr();
+  }
 }
 
-static void gen_rand_expr() {
-switch(choose(3)){
-  case 0:{
-    str_num+=sprintf(buf+str_num,"%u",choose(10));break;
-  }
-  case 1:{
-    str_num+=sprintf(buf+str_num,"%s",expr_str[0]);
+
+ static void gen_rand_expr() {
+  bufferoverflow(str_num);
+ switch(rand()%3){
+    case 0:{
+      str_num+=sprintf(buf+str_num,"%u",rand()%10);
+      break;
+      }
+    case 1:{
+    str_num+=sprintf(buf+str_num,"%s",expr_str[4]);
     gen_rand_expr();
-    str_num+=sprintf(buf+str_num,"%s",expr_str[1]);
+    str_num+=sprintf(buf+str_num,"%s",expr_str[5]);
     break;
   }
-  case 2:{
+  default:{
     gen_rand_expr();
-   str_num+=sprintf(buf+str_num,"%s",expr_str[2]);
-    gen_rand_expr();
-    break;
-  }
-  case 3:{
-    gen_rand_expr();
-    str_num+=sprintf(buf+str_num,"%s",expr_mul);
+   str_num+=sprintf(buf+str_num,"%s",expr_str[rand()%4]);
     gen_rand_expr();
     break;
   }
-  case 4:{
-    gen_rand_expr();
-    str_num+=sprintf(buf+str_num,"%s",expr_mul);
-    gen_rand_expr();
-    break;
-  }
-  default:buf[0]='2';break;
+ }
 }
-}
+
 int main(int argc, char *argv[]) {
   int seed = time(0);
   srand(seed);
@@ -82,6 +77,11 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
+    strcpy(buf,"");
+    str_num=0;
+    strcpy(code_buf,"");
+
+
     gen_rand_expr();
 
     sprintf(code_buf, code_format, buf);
@@ -91,8 +91,10 @@ int main(int argc, char *argv[]) {
     fputs(code_buf, fp);
     fclose(fp);
 
-    int ret = system("gcc /tmp/.code.c -o /tmp/.expr");
+    int ret = system("gcc -Werror /tmp/.code.c -o  /tmp/.expr");
     if (ret != 0) continue;
+      
+
 
     fp = popen("/tmp/.expr", "r");
     assert(fp != NULL);
@@ -102,6 +104,9 @@ int main(int argc, char *argv[]) {
     pclose(fp);
 
     printf("%u %s\n", result, buf);
+  strcpy(buf,"");
+    str_num=0;
+    strcpy(code_buf,"");
   }
   return 0;
 }

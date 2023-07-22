@@ -14,6 +14,7 @@
 ***************************************************************************************/
 
 #include <common.h>
+#include </home/gwc/ysyx-workbench/nemu/src/monitor/sdb/sdb.h>
 void init_monitor(int, char *[]);
 void am_init_monitor();
 void engine_start();
@@ -27,6 +28,32 @@ int main(int argc, char *argv[]) {
   init_monitor(argc, argv);
 #endif
 
+
+
+char str[65536]={};
+  char *inputexpr;
+  bool booltemp;
+  unsigned int result_ref;
+  unsigned int result_expr;
+  FILE *fp=fopen("/home/gwc/ysyx-workbench/nemu/tools/gen-expr/input","r");
+
+
+ while (fgets(str, sizeof(str), fp) != NULL)
+    {
+        inputexpr=strtok(str, " ");
+        result_ref=(unsigned)atoi(inputexpr);
+        inputexpr=strtok(NULL,"\n");
+        result_expr=expr(inputexpr,&booltemp);
+        printf("reference value %010u : ", result_ref);
+        if(result_expr==result_ref) printf("success ! \n");
+        else printf("failed ! \n");
+
+    }
+ 
+ fclose(fp);
+  
+
+  
   /* Start engine. */
   engine_start();
 
