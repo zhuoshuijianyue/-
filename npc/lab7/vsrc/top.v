@@ -22,10 +22,11 @@ module top (
     .state(state)
 );
    
-  MuxKey #(2, 1, 8) s0_mux (seg_key_temp, state,{
+  /*MuxKey #(2, 1, 8) s0_mux (seg_key_temp, state,{
     1'b1,seg_key,
     1'b0,8'd0
-  });
+  });*/
+  assign seg_key_temp=seg_key;
 
   key2asc2i u_key2asc2i(
     .seg_key_temp ( seg_key_temp ),
