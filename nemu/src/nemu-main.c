@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
 
 
-char str[65536]={};
+/*char str[65536]={};
   char *inputexpr;
   bool booltemp;
   unsigned int result_ref;
@@ -50,7 +50,7 @@ char str[65536]={};
 
     }
  
- fclose(fp);
+ fclose(fp);*/
   
 
   
