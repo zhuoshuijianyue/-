@@ -1,18 +1,3 @@
-/***************************************************************************************
-* Copyright (c) 2014-2022 Zihao Yu, Nanjing University
-*
-* NEMU is licensed under Mulan PSL v2.
-* You can use this software according to the terms and conditions of the Mulan PSL v2.
-* You may obtain a copy of Mulan PSL v2 at:
-*          http://license.coscl.org.cn/MulanPSL2
-*
-* THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
-* EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
-* MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
-*
-* See the Mulan PSL v2 for more details.
-***************************************************************************************/
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,41 +16,114 @@ static char *code_format =
 "  return 0; "
 "}";
 
-
 const char *expr_str[]= {"+","-","*","/","(",")"};
+/* type : 0  expr
+          1  num
+          2  str
+          3  (
+          4  )
+*/
 
-static unsigned int str_num=0;
-static void gen_rand_expr();
-void bufferoverflow(unsigned int a)
-{
-  if(a>=60000) {
-    a=0;
-    strcpy(buf,"\0");
-    gen_rand_expr();
+static int stack[65536];
+static unsigned str_num=0;
+
+void init_stack(){
+  for(int i=0;i<=65366;i++)
+  {
+    stack[i]=-1;
+
   }
+  stack[0]=0;
+  str_num=0;
 }
 
 
+void push(int a){
+  for(int i=0;i<=65536;i++)
+  {
+    if(stack[i]==-1) {
+      stack[i]=a;
+    break;
+    }
+
+}
+}
+
+void pop(){
+  for(int i=0;i<=65536;i++)
+  {
+    if(stack[i]==-1) 
+    {
+      stack[i-1]=-1;
+    break;
+    }
+  
+}
+}
+
+
+
  static void gen_rand_expr() {
-  bufferoverflow(str_num);
- switch(rand()%3){
+  init_stack();
+  int pcnum=0;
+  int randnum=0;
+  while(pcnum!=-1)
+  {
+    if(str_num>65530)
+  {
+    init_stack();
+    strcpy(buf,"");
+  }
+    switch(stack[pcnum]) {
     case 0:{
-      str_num+=sprintf(buf+str_num,"%u",rand()%10);
+      randnum=rand()%3;
+      if(randnum==0){
+        pop();
+        str_num+=sprintf(buf+str_num,"%u",rand()%40);
+      }
+      else if(randnum==1){
+        pop();
+      push(4);
+      push(0);
+      push(3);
+      pcnum=pcnum+3;
+      }
+      else if(randnum==2){
+        pop();
+      push(0);
+      push(2);
+      push(0);
+      pcnum=pcnum+3;
+       }
       break;
       }
     case 1:{
-    str_num+=sprintf(buf+str_num,"%s",expr_str[4]);
-    gen_rand_expr();
-    str_num+=sprintf(buf+str_num,"%s",expr_str[5]);
-    break;
+      pop();
+      str_num+=sprintf(buf+str_num,"%u",rand()%40);
+      break;
+      }
+    case 2:{
+      pop();
+      str_num+=sprintf(buf+str_num,"%s",expr_str[rand()%4]);
+      break;
+      }
+    case 3:{
+      pop();
+      str_num+=sprintf(buf+str_num,"%s",expr_str[4]);
+      break;
+      }
+    case 4:{
+      pop();
+      str_num+=sprintf(buf+str_num,"%s",expr_str[5]);
+      break;
+      }
+    default:{
+      break;
+      }
+    }
+    pcnum--;
   }
-  default:{
-    gen_rand_expr();
-   str_num+=sprintf(buf+str_num,"%s",expr_str[rand()%4]);
-    gen_rand_expr();
-    break;
-  }
- }
+  
 }
 
 int main(int argc, char *argv[]) {
@@ -77,11 +135,7 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
-    strcpy(buf,"");
-    str_num=0;
     strcpy(code_buf,"");
-
-
     gen_rand_expr();
 
     sprintf(code_buf, code_format, buf);
@@ -104,8 +158,6 @@ int main(int argc, char *argv[]) {
     pclose(fp);
 
     printf("%u %s\n", result, buf);
-  strcpy(buf,"");
-    str_num=0;
     strcpy(code_buf,"");
   }
   return 0;
