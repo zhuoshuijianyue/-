@@ -1,6 +1,8 @@
 STUID = ysyx_22040000
 STUNAME = 郭汪畅
-
+count:
+	@echo "Number of non-empty lines in C or h files:"
+	@find . -name "*.[c|h]" -exec cat {} + | grep -v '^$$' | wc -l | awk '{print $$1}'
 # DO NOT modify the following code!!!
 
 TRACER = tracer-ysyx
