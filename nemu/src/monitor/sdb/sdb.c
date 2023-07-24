@@ -164,7 +164,7 @@ static int cmd_p(char *args)
 
 static int cmd_w(char *args)
 {
-  char *w_arg=strtok(NULL,"");
+  char *w_arg=strtok(NULL," ");
   WP* wptemp=NULL;
   bool booltemp;
   word_t numtemp=0;
@@ -182,12 +182,13 @@ static int cmd_w(char *args)
 
 static int cmd_d(char *args)
 {
-  char *d_arg=strtok(NULL,"");
-  if (!isdigit(*d_arg))
+  char *d_arg=strtok(NULL," ");
+  if(d_arg==NULL) printf("wrong agrument\n ");
+  else if (!isdigit(*d_arg))
     {
       printf("Wrong argument\n");
     }
-  deletewp(atoi(d_arg));
+  else deletewp(atoi(d_arg));
     return 0;
 }
 
