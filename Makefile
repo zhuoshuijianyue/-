@@ -1,4 +1,4 @@
-STUID = ysyx_22040000
+STUID = ysyx_22060020
 STUNAME = 郭汪畅
 count:
 	@echo "Number of non-empty lines in C or h files:"
