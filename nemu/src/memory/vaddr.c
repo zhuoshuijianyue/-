@@ -21,9 +21,19 @@ word_t vaddr_ifetch(vaddr_t addr, int len) {
 }
 
 word_t vaddr_read(vaddr_t addr, int len) {
+  #ifdef CONFIG_MTRACE
+  log_write("memory read at 0x%x  length %d\nValue : 0x%08x\n", addr,len,paddr_read(addr, len));
+  #endif
   return paddr_read(addr, len);
 }
 
 void vaddr_write(vaddr_t addr, int len, word_t data) {
+  #ifdef CONFIG_MTRACE
+  log_write("memory write at 0x%x  length %d\n", addr,len);
+  log_write("Old value : 0x%x\n", paddr_read(addr, len));
+  #endif
   paddr_write(addr, len, data);
+  #ifdef CONFIG_MTRACE
+  log_write("NEW value : 0x%x\n", paddr_read(addr, len));
+  #endif
 }
