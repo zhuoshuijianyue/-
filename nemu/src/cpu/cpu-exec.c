@@ -175,12 +175,11 @@ void cpu_exec(uint64_t n) {
     case NEMU_QUIT: statistic();
   }
 
-  switch (nemu_state.state) {
-    case NEMU_END: case NEMU_ABORT:
-    if(nemu_state.state != NEMU_ABORT&&nemu_state.halt_ret == 0)
+    if((nemu_state.state != NEMU_ABORT&&nemu_state.halt_ret == 1)||nemu_state.state == NEMU_ABORT)
     for(int i=0;i<17;i++){
-  log_write("%s\n",buffer[i].ibuffer);
+  if(i!=(buffernum%17))log_write("   %s\n",buffer[i].ibuffer);
+  else log_write("-->%s\n",buffer[(buffernum-1)%17].ibuffer);
   }
-  }
+  
 
 }
