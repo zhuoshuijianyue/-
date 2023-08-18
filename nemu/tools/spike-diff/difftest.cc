@@ -17,6 +17,8 @@
 #include "sim.h"
 #include "../../include/common.h"
 #include <difftest-def.h>
+//#include "/home/gwc/ysyx-workbench/nemu/src/isa/riscv32/include/isa-def.h"
+//#include "/home/gwc/ysyx-workbench/nemu/include/isa.h"
 
 #define NR_GPR MUXDEF(CONFIG_RVE, 16, 32)
 
@@ -64,6 +66,10 @@ void sim_t::diff_get_regs(void* diff_context) {
 
 void sim_t::diff_set_regs(void* diff_context) {
   struct diff_context_t* ctx = (struct diff_context_t*)diff_context;
+  /*for(int j=0;j<NR_GPR;j++)
+  {
+    ctx->gpr[j]=cpu.gpr[j];
+  }*/
   for (int i = 0; i < NR_GPR; i++) {
     state->XPR.write(i, (sword_t)ctx->gpr[i]);
   }
