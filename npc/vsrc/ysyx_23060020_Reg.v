@@ -1,5 +1,5 @@
 // 触发器模板
-module Reg #(WIDTH = 1, RESET_VAL = 0) (
+module ysyx_23060020_Reg #(WIDTH = 1, RESET_VAL = 0) (
   input clk,
   input rst,
   input [WIDTH-1:0] din,
@@ -13,7 +13,7 @@ module Reg #(WIDTH = 1, RESET_VAL = 0) (
 endmodule
 
 // 使用触发器模板的示例
-module example(
+/*module example(
   input clk,
   input rst,
   input [3:0] in,
@@ -23,4 +23,4 @@ module example(
   Reg #(1, 1'b1) i0 (clk, rst, in[0], out[0], 1'b1);
   // 位宽为3比特, 复位值为3'b0, 写使能为out[0]
   Reg #(3, 3'b0) i1 (clk, rst, in[3:1], out[3:1], out[0]);
-endmodule
+endmodule*/

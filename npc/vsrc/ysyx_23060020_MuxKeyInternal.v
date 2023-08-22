@@ -1,4 +1,5 @@
-module MuxKeyInternal #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1, HAS_DEFAULT = 0) (
+/* verilator lint_off GENUNNAMED */
+module ysyx_23060020_MuxKeyInternal #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1, HAS_DEFAULT = 0) (
   output reg [DATA_LEN-1:0] out,
   input [KEY_LEN-1:0] key,
   input [DATA_LEN-1:0] default_out,
@@ -34,7 +35,7 @@ module MuxKeyInternal #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1, HAS_DEFAULT = 0) 
 
 endmodule
 
-module MuxKey #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (
+/*module MuxKey #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (
   output [DATA_LEN-1:0] out,
   input [KEY_LEN-1:0] key,
   input [NR_KEY*(KEY_LEN + DATA_LEN)-1:0] lut
@@ -49,7 +50,7 @@ module MuxKeyWithDefault #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (
   input [NR_KEY*(KEY_LEN + DATA_LEN)-1:0] lut
 );
   MuxKeyInternal #(NR_KEY, KEY_LEN, DATA_LEN, 1) i0 (out, key, default_out, lut);
-endmodule
+endmodule*/
 /*MuxKey 模块实现了“键值选择”功能，即在一个 (键值，数据) 的列表 lut 中，根据给定的键值 key ，
 将 out 设置为与其匹配的数据。若列表中不存在键值为 key 的数据，则 out 为 0 。
 特别地， MuxKeyWithDefault 模块可以提供一个默认值 default_out ，当列表中不存在键值为 key 的数据，则 out 为 default_out 。
