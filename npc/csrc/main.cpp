@@ -3,7 +3,7 @@
 #include<verilated_vcd_c.h>
 #include <assert.h>
 #include "verilated.h"
-#include "test.h"
+#include"mem.h"
 
 #include "Vysyx_23060020_top.h"
 #include <Vysyx_23060020_top___024root.h>
@@ -19,54 +19,16 @@ static Vysyx_23060020_top dut ;//例化verilog模块
 
 
 
-//about memory
-#define MEMBASE 0x80000000
-typedef unsigned char uint8_t;
-typedef unsigned int uint32_t;
-static uint8_t *pmem = NULL;
-
-uint8_t* guest_to_host(uint32_t paddr) { return pmem + paddr - MEMBASE; }
-uint32_t host_to_guest(uint8_t *haddr) { return haddr - pmem + MEMBASE; }
-static char *img_file = (char*)"/home/gwc/ysyx-workbench/am-kernels/tests/cpu-tests/build/dummy-riscv32e-npc.bin";
 
 
-static inline uint32_t host_read(void *addr) {
-  return *(uint32_t *)addr;
-}
-
-extern "C" int pmem_read(int raddr) {
-  return host_read(guest_to_host((unsigned)raddr));
-}
-extern "C" void pmem_write(int waddr, int wdata) {
-  *(uint32_t *)guest_to_host((unsigned)waddr)=(unsigned)wdata;
-}
-
-/*extern  unsigned pmem_read(unsigned paddr){
-  return host_read(guest_to_host(paddr));
-}
-
-extern  void pmem_write(unsigned paddr,unsigned pdata){
-  *(uint32_t *)guest_to_host(paddr)=pdata;
-}*/
-
-static long load_img() {
-  FILE *fp = fopen(img_file, "rb");
-
-  fseek(fp, 0, SEEK_END);
-  long size = ftell(fp);
-
-  fseek(fp, 0, SEEK_SET);
-  int ret = fread(guest_to_host(MEMBASE), size, 1, fp);
-  assert(ret == 1);
-
-  fclose(fp);
-  return size;
-}
-//
-
-static void single_cycle() {
+static void single_cycle(unsigned times) {
+  while((times--)&&(ebreak_bool)){
+printf("sim_times %ld\n",sim_time);
+ printf("pc : 0x%08x  instw : 0x%08x\n",dut.pc,pmem_read(dut.pc));
   dut.clk = 0; dut.instw=pmem_read(dut.pc);dut.eval();
   dut.clk = 1; dut.instw=pmem_read(dut.pc);dut.eval();
+  sim_time++;
+  }
 }
 
 void init_cpu(int n){
@@ -76,7 +38,10 @@ void init_cpu(int n){
   dut.eval();
   dut.clk = 1;
   dut.eval();
-  while(n!=0) {single_cycle();n--;}
+  while(n!=0) {
+  dut.clk = 0; dut.instw=pmem_read(dut.pc);dut.eval();
+  dut.clk = 1; dut.instw=pmem_read(dut.pc);dut.eval();
+  n--;}
   dut.rst=0;
 }
 
@@ -99,16 +64,14 @@ void init_cpu(int n){
       pmem_write(0x80000008,0xffc10113);
       pmem_write(0x8000000c,0x00100073);
       load_img();
-      do 
-      { 
+       
     
         //m_trace->dump(sim_time);
         //printf("pc = %08x , instw = %08x\n",dut.pc,dut.instw);
-       printf("sim_times %ld\n",sim_time);
-       printf("pc : 0x%08x  instw : 0x%08x\n",dut.pc,pmem_read(dut.pc));
-       single_cycle(); 
-       sim_time++;
-      }while(ebreak_bool);
+       
+       single_cycle(-1); 
+       
+
       //m_trace->close();
       if(dut.rootp->ysyx_23060020_top__DOT__u_ysyx_23060020_rf__DOT__regs[10]==0) 
       printf("\e[1;34m npc: \e[1;32mHIT GOOD TRAP\e[0m at \e[0m at pc = 0x%08x\n",dut.pc-4);
