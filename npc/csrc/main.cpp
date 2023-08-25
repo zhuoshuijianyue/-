@@ -27,20 +27,27 @@ static uint8_t *pmem = NULL;
 
 uint8_t* guest_to_host(uint32_t paddr) { return pmem + paddr - MEMBASE; }
 uint32_t host_to_guest(uint8_t *haddr) { return haddr - pmem + MEMBASE; }
-static char *img_file = (char*)"/home/gwc/ysyx-workbench/am-kernels/tests/cpu-tests/build/dummy-riscv32-nemu.bin";
+static char *img_file = (char*)"/home/gwc/ysyx-workbench/am-kernels/tests/cpu-tests/build/dummy-riscv32e-npc.bin";
 
 
 static inline uint32_t host_read(void *addr) {
   return *(uint32_t *)addr;
 }
 
-static inline uint32_t pmem_read(uint32_t paddr){
+extern "C" int pmem_read(int raddr) {
+  return host_read(guest_to_host((unsigned)raddr));
+}
+extern "C" void pmem_write(int waddr, int wdata) {
+  *(uint32_t *)guest_to_host((unsigned)waddr)=(unsigned)wdata;
+}
+
+/*extern  unsigned pmem_read(unsigned paddr){
   return host_read(guest_to_host(paddr));
 }
 
-static inline void pmem_write(uint32_t paddr,uint32_t pdata){
+extern  void pmem_write(unsigned paddr,unsigned pdata){
   *(uint32_t *)guest_to_host(paddr)=pdata;
-}
+}*/
 
 static long load_img() {
   FILE *fp = fopen(img_file, "rb");
@@ -77,20 +84,21 @@ void init_cpu(int n){
   int main(int argc, char** argv) {
         int a;
         int b;
-        test();
       //VerilatedContext* contextp = new VerilatedContext;
       //contextp->commandArgs(argc, argv);
-     printf("argv : %s\n",*(argv+1));
+
 
     //Verilated::traceEverOn(true);
     //VerilatedVcdC *m_trace=new VerilatedVcdC;//波形仿真
     //dut->trace(m_trace,99);
     //m_trace->open("waveform.vcd");
-      pmem=(unsigned char*)malloc(MEMBASE);
+      pmem=(unsigned char*)malloc(MEMBASE/8);
       init_cpu(10);
       pmem_write(0x80000000,0x00000413);
       pmem_write(0x80000004,0x00009117);
-      pmem_write(0x80000008,0x00100073);
+      pmem_write(0x80000008,0xffc10113);
+      pmem_write(0x8000000c,0x00100073);
+      load_img();
       do 
       { 
     
@@ -103,7 +111,8 @@ void init_cpu(int n){
       }while(ebreak_bool);
       //m_trace->close();
       if(dut.rootp->ysyx_23060020_top__DOT__u_ysyx_23060020_rf__DOT__regs[10]==0) 
-      printf("[1;34m npc: [1;32mHIT GOOD TRAP[0m at pc = 0x8000000c[0m at pc = 0x%08x\n",dut.pc-4);
+      printf("\e[1;34m npc: \e[1;32mHIT GOOD TRAP\e[0m at \e[0m at pc = 0x%08x\n",dut.pc-4);
+     else printf("\e[1;34m npc: \e[1;31mHIT BAD TRAP\e[0m at \e[0m at pc = 0x%08x\n",dut.pc-4);
       free(pmem);
       exit(EXIT_SUCCESS);
   }

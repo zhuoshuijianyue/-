@@ -6,16 +6,16 @@ VERILATOR_FLAGSVERILATOR_FLAGS +=--x-assign unique --x-initial unique
 #VERILATOR_FLAGSVERILATOR_FLAGS += -I /home/gwc/ysyx-workbench/npc/vsrc
 CPATH=~/ysyx-workbench/npc/csrc
 VPATH=~/ysyx-workbench/npc/vsrc
-
+IMG ?=
 VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
-all:
-	@echo "Write this Makefile by your self."
+#all:
+#	@echo "Write this Makefile by your self."
 
 sim:Vysyx_23060020_top
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
-	@./build/Vysyx_23060020_top 5
+	@./build/Vysyx_23060020_top $(IMG)
 	@-rm -rf ./build/Vysyx_23060020_top 
 
 
