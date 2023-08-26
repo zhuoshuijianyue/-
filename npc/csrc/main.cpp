@@ -1,27 +1,29 @@
 #include<stdlib.h>
 #include<iostream>
-#include<verilated_vcd_c.h>
 #include <assert.h>
 #include "verilated.h"
-#include"mem.h"
-
+#include"mem_npc.h"
+#include"sdb_npc.h"
+#include"common_npc.h"
+#include "ref_diff.h"
+#include <dlfcn.h>
 #include "Vysyx_23060020_top.h"
 #include <Vysyx_23060020_top___024root.h>
 #include "svdpi.h"
 #include "Vysyx_23060020_top__Dpi.h"
 #define MAX_SIM_TIME 40
 vluint64_t sim_time=0;
-static bool ebreak_bool=true;
+bool ebreak_bool=true;
 void ebreak(){
   ebreak_bool=false;
 }
-static Vysyx_23060020_top dut ;//例化verilog模块
+Vysyx_23060020_top dut ;//例化verilog模块
 
 
 
 
 
-static void single_cycle(unsigned times) {
+void single_cycle(unsigned times) {
   while((times--)&&(ebreak_bool)){
 printf("sim_times %ld\n",sim_time);
  printf("pc : 0x%08x  instw : 0x%08x\n",dut.pc,pmem_read(dut.pc));
@@ -57,19 +59,24 @@ void init_cpu(int n){
     //VerilatedVcdC *m_trace=new VerilatedVcdC;//波形仿真
     //dut->trace(m_trace,99);
     //m_trace->open("waveform.vcd");
-      pmem=(unsigned char*)malloc(MEMBASE/8);
+      pmem=(unsigned char*)malloc(MEMBASE);
       init_cpu(10);
-      pmem_write(0x80000000,0x00000413);
+      /*pmem_write(0x80000000,0x00000413);
       pmem_write(0x80000004,0x00009117);
       pmem_write(0x80000008,0xffc10113);
-      pmem_write(0x8000000c,0x00100073);
+      pmem_write(0x8000000c,0x00100073);*/
+      
+      parse_args(argc, argv) ;
+      init_difftest(diff_so_file);
+      ref_difftest_raise_intr(1);
+      
       load_img();
        
     
         //m_trace->dump(sim_time);
         //printf("pc = %08x , instw = %08x\n",dut.pc,dut.instw);
        
-       single_cycle(-1); 
+       sdb_mainloop(); 
        
 
       //m_trace->close();

@@ -44,6 +44,7 @@ module ysyx_23060020_contr (
     assign ren=1'b0;
     assign wen= instw_sw;
     
+
     always @(*) begin
         if(instw_ebreak) ebreak();
     end

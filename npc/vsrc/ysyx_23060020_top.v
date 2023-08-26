@@ -19,11 +19,18 @@ module ysyx_23060020_top (
 
   
   //assign w1d=rfwmux?imm:aluout;
-  ysyx_23060020_MuxKeyInternal #(4, 2, 32, 0) i0 (w1d, rfwmux, 32'd0, 
+  /*ysyx_23060020_MuxKeyInternal #(4, 2, 32, 0) i0 (w1d, rfwmux, 32'd0, 
           {2'b00,aluout,
           2'b01,imm,
           2'b10,mem_outdata,
-          2'b11,pc+4});
+          2'b11,pc+4});*/
+    assign w1d= (rfwmux==2'b00)?(aluout):(
+                (rfwmux==2'b01)?(imm):(
+                (rfwmux==2'b10)?(mem_outdata):(
+                (rfwmux==2'b11)?(pc+4):(32'd0)
+                )
+
+    ));
 
   assign alua=aluamux?pc:r1d;
   assign alub=alubmux?imm:r2d;
