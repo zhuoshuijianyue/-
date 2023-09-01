@@ -4,6 +4,7 @@
 #include <readline/history.h>
 #include <string.h>
 #include"common_npc.h"
+#include"ref_diff.h"
 
 const char *rs32regs[] = {
     "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
@@ -21,6 +22,11 @@ for (int i = 0; i < 32; i = i + 4)
            dut.rootp->ysyx_23060020_top__DOT__u_ysyx_23060020_rf__DOT__regs[i+3]);
   printf("%-3s  : 0x%08x	;\n", pc_reg, dut.pc);
   //printf("sp :%08x\n",dut.rootp->ysyx_23060020_top__DOT__u_ysyx_23060020_rf__DOT__regs[2]);
+  for (int j = 0; j < 32; j = j + 4)
+    printf("%-3s  : 0x%08x	;%-3s  : 0x%08x	;%-3s  : 0x%08x	;%-3s  : 0x%08x\n", rs32regs[j], cpu_ref.gpr[j], rs32regs[j + 1],
+           cpu_ref.gpr[j+1], rs32regs[j + 2], cpu_ref.gpr[j+2], rs32regs[j + 3], 
+           cpu_ref.gpr[j+3]);
+  printf("%-3s  : 0x%08x	;\n", pc_reg, cpu_ref.pc);
 }
 
 
@@ -78,8 +84,26 @@ static int cmd_info(char *args)
 
 static int cmd_si(char *args)
 {
-  single_cycle(1);
+  char *si_arg = strtok(NULL, " ");
+  int num_temp=0;
+  char *str_temp;
+  if (si_arg == NULL)
+  {
+    single_cycle(1);
   if(!ebreak_bool) printf("ALL DONE \n");
+  }
+  else {
+    if (!isdigit(*si_arg))
+    {
+      printf("%s:Wrong argument\n", si_arg);
+      return 0;
+    }
+    else {
+      num_temp=strtol(si_arg,&str_temp,10);
+      single_cycle(num_temp);
+    }
+  }
+  
   return 0;
 }
 
@@ -92,12 +116,14 @@ static int cmd_x(char *args)
   if (x_arg == NULL)
   {
     printf("Wrong argument\n");
+    return 0;
   }
   else
   {
     if (!isdigit(*x_arg))
     {
       printf("%s:Wrong argument\n", x_arg);
+      return 0;
     }
     else
     {

@@ -1,3 +1,7 @@
+import "DPI-C"  function  int pmem_read(
+  input int mem_add);
+import "DPI-C"  function void pmem_write(
+  input int mem_add, input int mem_data);
 module ysyx_23060020_top (
   input clk,rst,
   input[31:0] instw,
@@ -6,11 +10,14 @@ module ysyx_23060020_top (
 
   wire jump_addsel;
   wire[1:0] rfwmux;
-  wire rfwen,jump_bool,ren,wen;
+  wire rfwen,jump_bool,wen;
+  wire memvalid/* verilator public_flat */;
   wire[31:0] imm;
   wire[4:0]  w1a,r1a,r2a;
   wire[31:0] w1d,r1d,r2d;
-  wire[31:0] aluout,alua,alub,mem_outdata;
+  wire[31:0] aluout,alua,alub;
+  reg[31:0] mem_outdata,mem_data;
+  reg[31:0] mem_add/* verilator public_flat */;
   wire[31:0] jump_add;
   wire alubmux,aluamux;
   assign r1a=instw[19:15];
@@ -35,12 +42,14 @@ module ysyx_23060020_top (
   assign alua=aluamux?pc:r1d;
   assign alub=alubmux?imm:r2d;
   assign jump_add=jump_bool?(jump_addsel?((r1d+imm)&{{31{1'b1}},1'b0}):pc+imm):32'd0;
+  assign mem_add=aluout;
+  assign mem_data=r2d;
 
 ysyx_23060020_contr u_ysyx_23060020_contr(
     .instw       ( instw       ),
     .jump_addsel ( jump_addsel ),
     .rfwen       ( rfwen       ),
-    .ren         ( ren         ),
+    .memvalid    ( memvalid         ),
     .wen         ( wen         ),
     .rfwmux      ( rfwmux      ),
     .imm         ( imm         ),
@@ -78,13 +87,23 @@ ysyx_23060020_pc u_ysyx_23060020_pc(
     .pc        ( pc        )
 );
 
-ysyx_23060020_mem u_ysyx_23060020_mem(
-    .ren      ( ren      ),
+/*ysyx_23060020_mem u_ysyx_23060020_mem(
+    .memvalid      ( memvalid      ),
     .wen      ( wen      ),
     .mem_add  ( aluout  ),
     .mem_data ( r2d ),
     .mem_outdata  ( mem_outdata  )
-);
+);*/
+
+always @(*) begin
+      if(memvalid) begin
+        mem_outdata=pmem_read(mem_add);
+         if(wen) begin
+          pmem_write(mem_add,mem_data);
+         end
+      end
+        else  mem_outdata=32'd0;
+    end
 
 
 

@@ -9,5 +9,9 @@ extern Vysyx_23060020_top dut ;//例化verilog模块
 extern bool ebreak_bool;
 void single_cycle(unsigned); 
 int pmem_read(int);
-
+typedef struct cpu_reg{
+    unsigned gpr[32];
+    unsigned pc;
+} CPU_STATE;
+extern CPU_STATE cpu_ref;
 #endif

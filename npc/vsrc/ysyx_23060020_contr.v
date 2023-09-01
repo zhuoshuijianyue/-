@@ -2,7 +2,7 @@ import "DPI-C" context function void ebreak();
 module ysyx_23060020_contr (
     input[31:0] instw,
     output jump_addsel,
-    output rfwen,ren,wen,
+    output rfwen,memvalid,wen,
     output[1:0] rfwmux,
     output[31:0] imm,
     output alubmux,aluamux,jump_bool
@@ -10,7 +10,7 @@ module ysyx_23060020_contr (
     wire Itype,Utype,Jtype,Stype;
     wire instw_addi,instw_ebreak,instw_lui,instw_jal,instw_jalr;
     wire instw_auipc;
-    wire instw_sw;
+    wire instw_sw,instw_lw;
 
     assign instw_ebreak=    (instw==32'h00100073);
     assign instw_lui=       (                           instw[6:0]==7'b0110111);
@@ -19,29 +19,31 @@ module ysyx_23060020_contr (
     assign instw_jalr=      (instw[14:12]==3'b000&&     instw[6:0]==7'b1100111);
     assign instw_addi=      (instw[14:12]==3'b000&&     instw[6:0]==7'b0010011);
     assign instw_sw=        (instw[14:12]==3'b010&&     instw[6:0]==7'b0100011);
+    assign instw_lw=        (instw[14:12]==3'b010&&     instw[6:0]==7'b0000011);
 
-    assign Itype=instw_addi     |   instw_jalr;
+    assign Itype=instw_addi     |   instw_jalr  |   instw_lw;
     assign Utype=instw_auipc    |   instw_lui;
     assign Jtype=instw_jal;
     assign Stype=instw_sw;
     
     
-    assign imm= ({32{Itype}}    &   {{20{instw[31]}},instw[31:20]})|
+    assign imm= ({32{Itype}}    &   {{21{instw[31]}},instw[30:20]})|
                 ({32{Utype}}    &   {{instw[31:12]},{12'd0}})|
                 ({32{Jtype}}    &   {{12{instw[31]}},instw[19:12],instw[20],instw[30:25],instw[24:21],1'b0})|
-                ({32{Stype}}    &   {{21{instw[31]}},instw[30:25],instw[24:21],instw[20]});
+                ({32{Stype}}    &   {{21{instw[31]}},instw[30:25],instw[11:7]});
 
     assign jump_bool=   instw_jal   |   instw_jalr;
     assign jump_addsel= instw_jalr;
-    assign rfwmux[1]=instw_jal  |   instw_jalr;
-    assign rfwmux[0]=instw_lui  |   instw_jal   |instw_jalr;
-    assign rfwen=instw_addi | instw_auipc   |   instw_lui   | instw_jal |instw_jalr ;
+    assign rfwmux[1]=instw_jal  |   instw_jalr  |   instw_lw;
+    assign rfwmux[0]=instw_lui  |   instw_jal   |   instw_jalr;
+    assign rfwen=instw_addi | instw_auipc   |   instw_lui   | instw_jal |instw_jalr 
+                            |   instw_lw;
 
     assign aluamux=instw_auipc;
-    assign alubmux=instw_addi   | instw_auipc   |   instw_sw;
+    assign alubmux=instw_addi   | instw_auipc   |   instw_sw    |   instw_lw;
     
     
-    assign ren=1'b0;
+    assign memvalid=instw_sw    |   instw_lw;
     assign wen= instw_sw;
     
 

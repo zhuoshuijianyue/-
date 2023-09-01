@@ -28,6 +28,7 @@ __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction)
     *((uint8_t*)buf+i)=*guest_to_host(addr+i);}
   else {for(int j=0;j<n;j++)
     *guest_to_host(addr+j)=*((uint8_t*)buf+j);}
+    printf("difftest_memcpy success !\n");
 }
 
 __EXPORT void difftest_regcpy(void *dut, bool direction) {

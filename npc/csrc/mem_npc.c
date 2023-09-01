@@ -19,10 +19,20 @@ static inline uint32_t host_read(void *addr) {
 }
 
 extern "C" int pmem_read(int raddr) {
+  /*if(raddr>0x87ffffff||raddr<0x80000000) {
+    printf("wrong address : 0x%08x\n",raddr);
+    assert(0);
+    }*/
+    if(raddr==0) return 0;
   return host_read(guest_to_host((unsigned)raddr));
 }
 extern "C" void pmem_write(int waddr, int wdata) {
+  if(waddr>0x87ffffff||waddr<0x80000000) {
+    printf("wrong address : 0x%08x\n",waddr);
+    assert(0);
+    }
   *(uint32_t *)guest_to_host((unsigned)waddr)=(unsigned)wdata;
+  printf("mem write addree/data : 0x%08x,0x%08x\n",(unsigned)waddr,(unsigned)wdata);
 }
 
 
