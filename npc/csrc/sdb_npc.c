@@ -113,6 +113,7 @@ static int cmd_x(char *args)
   int x_len=0;
   int num_temp=0;
   char *str_temp;
+  int read_temp;
   if (x_arg == NULL)
   {
     printf("Wrong argument\n");
@@ -142,7 +143,8 @@ static int cmd_x(char *args)
     }
         for (int i = 0; i < x_len; i = i + 1)
         {
-          printf("0x%08x:   %08x\n", num_temp+4*i, pmem_read(num_temp+ 4 * i));
+          pmem_read(num_temp+ 4 * i,&read_temp);
+          printf("0x%08x:   %08x\n", num_temp+4*i, read_temp);
         }
       }
     }

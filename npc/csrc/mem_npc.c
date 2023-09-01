@@ -18,13 +18,13 @@ static inline uint32_t host_read(void *addr) {
   return *(uint32_t *)addr;
 }
 
-extern "C" int pmem_read(int raddr) {
+extern "C" void pmem_read(int raddr,int *rdata) {
   /*if(raddr>0x87ffffff||raddr<0x80000000) {
     printf("wrong address : 0x%08x\n",raddr);
     assert(0);
     }*/
-    if(raddr==0) return 0;
-  return host_read(guest_to_host((unsigned)raddr));
+    if(raddr==0) return ;
+  else  {*rdata=host_read(guest_to_host((unsigned)raddr));return;}
 }
 extern "C" void pmem_write(int waddr, int wdata) {
   if(waddr>0x87ffffff||waddr<0x80000000) {

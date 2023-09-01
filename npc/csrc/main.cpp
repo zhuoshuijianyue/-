@@ -31,7 +31,7 @@ static void init_data(){
   pmem=(unsigned char*)malloc(0x8000000);
   
   init_difftest(diff_so_file);
-  ref_difftest_init(1);
+  ref_difftest_init(10);
   ref_difftest_memcpy(MEMBASE , (void*)pmem, load_img() , 0);
   init_cpu(10);
 }
@@ -50,15 +50,12 @@ bool difftest_checkregs(){
 
 void single_cycle(unsigned times) {
   while((times--)&&(ebreak_bool)&&diffregs){
-  //printf("sim_times %ld\n",sim_time);
-  printf("pc : 0x%08x  instw : 0x%08x\n",dut.pc,pmem_read(dut.pc));
   npc_spc=dut.pc;
-  dut.instw=pmem_read(dut.pc);
+  pmem_read(dut.pc,(int*)&dut.instw);
+  printf("pc : 0x%08x  instw : 0x%08x\n",dut.pc,dut.instw);
   dut.clk = 0; 
-  //dut.instw=pmem_read(dut.pc);
   dut.eval();
   dut.clk = 1; 
-  dut.instw=pmem_read(dut.pc);
   dut.eval();
   ref_difftest_exec(1);
   ref_difftest_regcpy(&cpu_ref,1 );
@@ -74,35 +71,23 @@ void single_cycle(unsigned times) {
 void init_cpu(int n){
   dut.rst=1;
   printf("test1");
-  dut.pc=0x80000000;
-  dut.rootp->ysyx_23060020_top__DOT__memvalid=0;
-  dut.rootp->ysyx_23060020_top__DOT__mem_add=0x80000000;
-  dut.instw=pmem_read(dut.pc);
   dut.clk=0;
-  
   dut.eval();
   dut.clk = 1;
   dut.eval();
-  dut.pc=0x80000000;
-  
-  dut.instw=pmem_read(dut.pc);
-  
-
+  pmem_read(dut.pc,(int*)&dut.instw);
   while(n!=0) {
   dut.clk = 0; dut.eval();
   dut.clk = 1; dut.eval();
   n--;}
   dut.rst=0;
-  printf("init cpu success !\n");
+  printf("init_cpu success !\n");
 }
 
 
   int main(int argc, char** argv) {
       parse_args(argc, argv) ;
-      //init_data();
       init_data();
-        //m_trace->dump(sim_time);
-        //printf("pc = %08x , instw = %08x\n",dut.pc,dut.instw);
       sdb_mainloop(); 
       free(pmem);
       exit(EXIT_SUCCESS);
