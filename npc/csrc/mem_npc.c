@@ -3,7 +3,8 @@
 #include <assert.h>
 #include "mem_npc.h"
 #include <getopt.h>
-
+#include"common_npc.h"
+#include "ref_diff.h"
 
 //about memory
 char *img_file = NULL;
@@ -19,20 +20,44 @@ static inline uint32_t host_read(void *addr) {
 }
 
 extern "C" void pmem_read(int raddr,int *rdata) {
+  //printf("mem read address/data : 0x%08x,0x%08x\n",(unsigned)raddr,(unsigned)*rdata);
   /*if(raddr>0x87ffffff||raddr<0x80000000) {
     printf("wrong address : 0x%08x\n",raddr);
     assert(0);
     }*/
-    if(raddr==0) return ;
+    /*if(raddr==0) return ;
+    else*/ if(raddr>0x87ffffff||raddr<0x80000000) {
+      return;}
   else  {*rdata=host_read(guest_to_host((unsigned)raddr));return;}
 }
-extern "C" void pmem_write(int waddr, int wdata) {
+extern "C" void pmem_write(int waddr, int wdata,char wmask) {
+  int num_temp=0;
+  uint32_t* pmem_temp=(uint32_t*)malloc(sizeof(uint32_t));
   if(waddr>0x87ffffff||waddr<0x80000000) {
     printf("wrong address : 0x%08x\n",waddr);
     assert(0);
     }
-  *(uint32_t *)guest_to_host((unsigned)waddr)=(unsigned)wdata;
-  printf("mem write addree/data : 0x%08x,0x%08x\n",(unsigned)waddr,(unsigned)wdata);
+  if(wmask==15){
+      *(uint32_t *)guest_to_host((unsigned)waddr)=(unsigned)wdata;
+      num_temp=4;
+    }
+  else if(wmask==3){
+    //printf("SH\n");
+    *(short *)guest_to_host((unsigned)waddr)=(short)wdata;
+    num_temp=2;
+  }
+  else if(wmask==1){
+    //printf("SB\n");
+    *(uint8_t *)guest_to_host((unsigned)waddr)=(uint8_t)wdata;
+    num_temp=1;
+  }
+  else {*(uint32_t *)guest_to_host((unsigned)waddr)=0;}
+  printf("mem write address/data : 0x%08x,0x%08x\n",(unsigned)waddr,(unsigned)wdata);
+  //if(waddr<=0x80008bce&&(waddr+12)>=0x80008bce)
+  //printf("mem write address/data : 0x%08x,0x%08x\n",(unsigned)waddr,(unsigned)wdata);
+  //ref_difftest_memcpy(waddr , (void*)pmem_temp, 4*sizeof(uint32_t) , 1);
+  //printf("ref_mem write address/data : 0x%08x,0x%08x\n",(unsigned)waddr,*(unsigned*)pmem_temp);
+  //if((uint8_t)wdata!=*(uint8_t*)pmem_temp) {ebreak_bool=0;printf("mem different at 0x%08x\n",waddr);}
 }
 
 

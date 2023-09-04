@@ -15,6 +15,7 @@
 #include "ref_diff.h"
 #define MAX_SIM_TIME 40
 vluint64_t sim_time=0;
+uint32_t *pmem_temp=(uint32_t *)malloc(sizeof(uint32_t));
 static unsigned npc_spc;
 bool diffregs=1;
 CPU_STATE cpu_dut;
@@ -31,33 +32,38 @@ static void init_data(){
   pmem=(unsigned char*)malloc(0x8000000);
   
   init_difftest(diff_so_file);
-  ref_difftest_init(10);
+  ref_difftest_init(0);
   ref_difftest_memcpy(MEMBASE , (void*)pmem, load_img() , 0);
   init_cpu(10);
 }
 
 bool difftest_checkregs(){
+  bool temp=1;
   for(int i=0;i<32;i++)
   {
     if(cpu_ref.gpr[i]!=dut.rootp->ysyx_23060020_top__DOT__u_ysyx_23060020_rf__DOT__regs[i])
     {
-      printf("regs[%d] different with ref of NEMU at 0x%08x\n",i,npc_spc);return 0;
+      printf("regs[%d] different with ref of NEMU at 0x%08x\n",i,npc_spc);temp=0;
     }
   }
-  if(cpu_ref.pc!=dut.pc) {printf("PC different with ref of NEMU at 0x%08x\n",npc_spc); return 0;}
- return 1;
+  if(cpu_ref.pc!=dut.pc) {printf("PC different with ref of NEMU at 0x%08x\n",npc_spc); temp=0;}
+ return temp;
 }
 
 void single_cycle(unsigned times) {
   while((times--)&&(ebreak_bool)&&diffregs){
+  ref_difftest_exec(1);
+  ref_difftest_memcpy(0x80008bce , (void*)pmem_temp, 4*sizeof(uint32_t) , 1);
+  printf("ref_mem  address/data : 0x80008bce,0x%08x\n",*(unsigned*)pmem_temp);
   npc_spc=dut.pc;
   pmem_read(dut.pc,(int*)&dut.instw);
   printf("pc : 0x%08x  instw : 0x%08x\n",dut.pc,dut.instw);
+  printf("sim time : %ld\n",sim_time);
   dut.clk = 0; 
   dut.eval();
   dut.clk = 1; 
   dut.eval();
-  ref_difftest_exec(1);
+  
   ref_difftest_regcpy(&cpu_ref,1 );
   diffregs=difftest_checkregs();
   sim_time++;
